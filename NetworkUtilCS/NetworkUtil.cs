@@ -14,6 +14,11 @@ namespace NetworkUtilCS
             this.clientSocket = clientSocket;
         }
 
+        public Socket GetSocket()
+        {
+            return clientSocket;
+        }
+
         public void Write(object o)
         {
             BinaryFormatter binaryFormatter = new BinaryFormatter();

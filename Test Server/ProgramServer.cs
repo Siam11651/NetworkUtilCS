@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -9,11 +8,9 @@ namespace Server
 {
     class Server
     {
-        private List<Socket> clientSockets;
 
         public Server()
         {
-            clientSockets = new List<Socket>();
             IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
             IPEndPoint ipEndPoint = new IPEndPoint(ipAddress, 44444);
             Socket serverSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -21,46 +18,30 @@ namespace Server
             serverSocket.Bind(ipEndPoint);
             serverSocket.Listen(10);
 
-            Thread writeThread = new Thread(new ThreadStart(()=>
-            {
-                while(true)
-                {
-                    Socket clientSocket;
-
-                    try
-                    {
-                        Console.WriteLine("Waiting for connection...");
-                        clientSocket = serverSocket.Accept();
-                        clientSockets.Add(clientSocket);
-                    }
-                    catch(Exception exception)
-                    {
-                        Console.WriteLine("Exception:");
-                        Console.WriteLine(exception.Message);
-                    }
-                }
-            }));
-
-            writeThread.Start();
-
             while(true)
             {
-                string str = Console.ReadLine();
+                Console.WriteLine("Waiting for connection...");
 
-                try
+                Socket clientSocket = serverSocket.Accept(); ;
+
+                Thread readThread = new Thread(new ThreadStart(() =>
                 {
-                    foreach (Socket clientSocket in clientSockets)
+                    NetworkUtil networkUtil = new NetworkUtil(clientSocket);
+
+                    while (true)
                     {
-                        NetworkUtil networkUtil = new NetworkUtil(clientSocket);
+                        object o = networkUtil.Read();
 
-                        networkUtil.Write(str);
+                        if (o.GetType() == typeof(string))
+                        {
+                            string str = (string)o;
+
+                            Console.WriteLine(str);
+                        }
                     }
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine("Exception:");
-                    Console.WriteLine(exception.Message);
-                }
+                }));
+
+                readThread.Start();
             }
         }
     }

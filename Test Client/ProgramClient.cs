@@ -22,10 +22,9 @@ namespace Client
             {
                 try
                 {
-                    object o1 = networkUtil.Read();
-                    string str1 = (string)o1;
+                    string str = Console.ReadLine();
 
-                    Console.WriteLine(str1);
+                    networkUtil.Write(str);
                 }
                 catch(Exception exception)
                 {
